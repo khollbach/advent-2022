@@ -1,16 +1,19 @@
 use lazy_regex::regex;
 
-use crate::input;
+use crate::prelude::*;
 
 #[test]
 fn part_1() {
     let input = input!(5);
+    // let input = example!(5);
 
     let (stacks, instructions) = input.split_once("\n\n").unwrap();
 
     let mut stacks: Vec<_> = stacks.lines().map(String::from).collect();
 
     for line in instructions.lines() {
+        dbg!(&stacks, line);
+
         let caps = regex!(r"^move (\d+) from (\d+) to (\d+)$")
             .captures(line)
             .unwrap();
@@ -27,6 +30,8 @@ fn part_1() {
             stacks[dest].push(c);
         }
     }
+
+    dbg!(&stacks);
 
     let message: String = stacks
         .iter()
