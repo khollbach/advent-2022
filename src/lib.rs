@@ -2,6 +2,7 @@
 
 mod day_1;
 mod day_5;
+mod day_6;
 
 mod prelude {
     #[allow(unused_imports)]
