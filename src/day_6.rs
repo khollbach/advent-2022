@@ -4,15 +4,15 @@ use crate::prelude::*;
 fn part_1() {
     let input = input!(6);
 
-    let num_chars = find_magic(input).unwrap();
+    let num_chars = find_magic(input, 4).unwrap();
     dbg!(num_chars);
 }
 
-/// Return the number of chars up to and including the magic 4.
-fn find_magic(input: &str) -> Option<usize> {
-    for (i, window) in input.as_bytes().windows(4).enumerate() {
+/// Return the number of chars up to and including the magic window.
+fn find_magic(input: &str, window_size: usize) -> Option<usize> {
+    for (i, window) in input.as_bytes().windows(window_size).enumerate() {
         if all_unique(window) {
-            return Some(i + 4);
+            return Some(i + window_size);
         }
     }
 
@@ -26,4 +26,12 @@ fn all_unique(window: &[u8]) -> bool {
             window[i] != window[j]
         })
     })
+}
+
+#[test]
+fn part_2() {
+    let input = input!(6);
+
+    let num_chars = find_magic(input, 14).unwrap();
+    dbg!(num_chars);
 }
