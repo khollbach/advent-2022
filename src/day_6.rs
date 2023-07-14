@@ -21,11 +21,7 @@ fn find_magic(input: &str, window_size: usize) -> Option<usize> {
 
 fn all_unique(window: &[u8]) -> bool {
     let n = window.len();
-    (0..n).all(|i| {
-        (i + 1..n).all(|j| {
-            window[i] != window[j]
-        })
-    })
+    (0..n).all(|i| (i + 1..n).all(|j| window[i] != window[j]))
 }
 
 #[test]
