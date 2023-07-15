@@ -18,6 +18,19 @@ fn part_1() -> Result<()> {
     Ok(())
 }
 
+#[test]
+fn part_2() -> Result<()> {
+    let input = input!(9);
+
+    let mut err = Ok(());
+    let motions = parse_input(input).scan(&mut err, until_err);
+    let answer = simulate_part_2(motions);
+    err?;
+
+    dbg!(answer);
+    Ok(())
+}
+
 fn parse_input(input: &str) -> impl Iterator<Item = Result<Motion>> + '_ {
     input.lines().map(parse_line)
 }
@@ -44,6 +57,7 @@ fn parse_line(line: &str) -> Result<Motion> {
     })
 }
 
+#[derive(Debug, Clone, Copy)]
 struct Motion {
     dir: Point,
     amount: u32,
@@ -72,7 +86,7 @@ fn simulate(motions: impl Iterator<Item = Motion>) -> usize {
             head.x += m.dir.x;
             head.y += m.dir.y;
 
-            while !is_close(head, tail) {
+            if !is_close(head, tail) {
                 let dx = head.x - tail.x;
                 let dy = head.y - tail.y;
                 tail.x += dx.signum();
@@ -89,4 +103,34 @@ fn is_close(a: Point, b: Point) -> bool {
     let dx = a.x - b.x;
     let dy = a.y - b.y;
     dx.abs() <= 1 && dy.abs() <= 1
+}
+
+fn simulate_part_2(motions: impl Iterator<Item = Motion>) -> usize {
+    let mut seen = HashSet::new();
+
+    // The head is knots[0] and the tail is knots[9].
+    let n = 10;
+    let mut knots = vec![Point::ORIGIN; n];
+    seen.insert(knots[n - 1]);
+
+    for m in motions {
+        for _ in 0..m.amount {
+            // Update head.
+            knots[0].x += m.dir.x;
+            knots[0].y += m.dir.y;
+
+            for i in 0..n - 1 {
+                if !is_close(knots[i], knots[i + 1]) {
+                    let dx = knots[i].x - knots[i + 1].x;
+                    let dy = knots[i].y - knots[i + 1].y;
+                    knots[i + 1].x += dx.signum();
+                    knots[i + 1].y += dy.signum();
+                }
+            }
+
+            seen.insert(knots[n - 1]);
+        }
+    }
+
+    seen.len()
 }

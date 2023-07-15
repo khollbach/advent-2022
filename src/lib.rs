@@ -24,11 +24,7 @@ use input;
 #[allow(unused_macros)]
 macro_rules! example {
     ($n:expr) => {
-        include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/examples/",
-            stringify!($n)
-        ))
+        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/examples/", $n))
     };
 }
 #[allow(unused_imports)]
