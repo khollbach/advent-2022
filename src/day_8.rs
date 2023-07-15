@@ -7,7 +7,14 @@ fn part_1() -> Result<()> {
     let input = input!(8);
     let grid = Grid::parse(input)?;
     dbg!(grid.num_visible_trees());
+    Ok(())
+}
 
+#[test]
+fn part_2() -> Result<()> {
+    let input = input!(8);
+    let grid = Grid::parse(input)?;
+    dbg!(grid.best_score());
     Ok(())
 }
 
@@ -106,5 +113,47 @@ impl Grid {
                 tallest_so_far = self.grid[i][j];
             }
         }
+    }
+
+    fn best_score(&self) -> usize {
+        let (w, h) = self.dims();
+
+        (0..h).flat_map(|i| {
+            (0..w).map(move |j| {
+                self.score(i, j)
+            })
+        }).max().unwrap()
+    }
+
+    fn score(&self, i: usize, j: usize) -> usize {
+        let (w, h) = self.dims();
+        let limit = self.grid[i][j];
+
+        // look in each NESW, count trees (but stopping at/after the first tree that's as tall as us)
+        let mut total = 1;
+
+        // rows
+        total *= self.probe_2((j + 1..w).map(|j2| (i, j2)), limit);
+        total *= self.probe_2((0..j).rev().map(|j2| (i, j2)), limit);
+
+        // cols
+        total *= self.probe_2((i + 1..h).map(|i2| (i2, j)), limit);
+        total *= self.probe_2((0..i).rev().map(|i2| (i2, j)), limit);
+
+        total
+    }
+
+    /// Helper for `score`.
+    fn probe_2(&self, coords: impl Iterator<Item=(usize, usize)>, limit: u8) -> usize {
+        let mut count = 0;
+        for (i, j) in coords {
+            count += 1;
+
+            // The first tall tree marks the end of our line-of-sight.
+            if self.grid[i][j] >= limit {
+                break;
+            }
+        }
+        count
     }
 }
