@@ -1,13 +1,12 @@
 use std::{
     collections::HashMap,
     io::{BufRead, BufReader, Cursor},
-    result::Result as StdResult,
 };
 
 use anyhow::{bail, ensure, Context, Result};
 use lazy_regex::regex;
 
-use crate::input;
+use crate::{helpers::until_err, input};
 
 #[test]
 fn part_1() -> Result<()> {
@@ -108,17 +107,6 @@ fn parse_input(input: impl BufRead) -> Result<Vec<Command>> {
     err?;
 
     Ok(commands)
-}
-
-/// Helper function for Iterator::scan.
-fn until_err<T, E>(err: &mut &mut StdResult<(), E>, item: StdResult<T, E>) -> Option<T> {
-    match item {
-        Ok(item) => Some(item),
-        Err(e) => {
-            **err = Err(e);
-            None
-        }
-    }
 }
 
 enum Command {

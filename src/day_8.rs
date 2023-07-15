@@ -118,11 +118,10 @@ impl Grid {
     fn best_score(&self) -> usize {
         let (w, h) = self.dims();
 
-        (0..h).flat_map(|i| {
-            (0..w).map(move |j| {
-                self.score(i, j)
-            })
-        }).max().unwrap()
+        (0..h)
+            .flat_map(|i| (0..w).map(move |j| self.score(i, j)))
+            .max()
+            .unwrap()
     }
 
     fn score(&self, i: usize, j: usize) -> usize {
@@ -144,7 +143,7 @@ impl Grid {
     }
 
     /// Helper for `score`.
-    fn probe_2(&self, coords: impl Iterator<Item=(usize, usize)>, limit: u8) -> usize {
+    fn probe_2(&self, coords: impl Iterator<Item = (usize, usize)>, limit: u8) -> usize {
         let mut count = 0;
         for (i, j) in coords {
             count += 1;
