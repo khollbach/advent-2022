@@ -27,6 +27,40 @@ fn part_1() -> Result<()> {
     Ok(())
 }
 
+#[test]
+fn part_2() -> Result<()> {
+    let input = input!(7);
+    let commands = parse_input(BufReader::new(Cursor::new(input)))?;
+    let tree = build_tree(commands)?;
+    let sizes = tree.dir_sizes();
+
+    let total_disk_space = 70_000_000;
+    let space_needed_for_update = 30_000_000;
+
+    let current_usage = sizes[0];
+    let target_usage = total_disk_space - space_needed_for_update;
+
+    // Reasonableness checks.
+    ensure!(
+        current_usage < total_disk_space,
+        "we've already overflowed our disk; huh? {:}",
+        current_usage
+    );
+    ensure!(
+        current_usage > target_usage,
+        "we're already under the target usage; huh? {:}",
+        current_usage
+    );
+
+    let amount_to_reclaim = current_usage - target_usage;
+    let candidate_dirs = sizes.into_iter().filter(|&s| s >= amount_to_reclaim);
+    let answer = candidate_dirs.min().unwrap();
+
+    dbg!(answer);
+
+    Ok(())
+}
+
 /// Assumptions:
 /// * all commands are "successful"; either:
 ///   1. cd into a directory, with no console output
