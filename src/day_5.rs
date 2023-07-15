@@ -1,6 +1,6 @@
 use lazy_regex::regex;
 
-use crate::prelude::*;
+use crate::input;
 
 #[test]
 fn part_1() {

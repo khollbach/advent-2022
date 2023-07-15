@@ -5,11 +5,6 @@ mod day_5;
 mod day_6;
 mod day_7;
 
-mod prelude {
-    #[allow(unused_imports)]
-    pub(crate) use crate::{example, input};
-}
-
 /// Get the input for a given day, as a &str.
 macro_rules! input {
     ($n:expr) => {
@@ -32,4 +27,5 @@ macro_rules! example {
         ))
     };
 }
+#[allow(unused_imports)]
 use example;
