@@ -18,17 +18,17 @@ fn part_1() -> Result<()> {
     Ok(())
 }
 
-fn parse_input(input: &str) -> impl Iterator<Item = Result<Point>> + '_ {
+fn parse_input(input: &str) -> impl Iterator<Item = Result<Motion>> + '_ {
     input.lines().map(parse_line)
 }
 
-fn parse_line(line: &str) -> Result<Point> {
+fn parse_line(line: &str) -> Result<Motion> {
     let (dir, amount) = line
         .split_whitespace()
         .collect_tuple()
         .context("expected two words")?;
 
-    let (mut x, mut y) = match dir {
+    let (x, y) = match dir {
         "L" => (-1, 0),
         "R" => (1, 0),
         "D" => (0, -1),
@@ -36,11 +36,17 @@ fn parse_line(line: &str) -> Result<Point> {
         _ => bail!("not a direction code: {dir:?}"),
     };
 
-    let amount: i32 = amount.parse()?;
-    x *= amount;
-    y *= amount;
+    let amount: u32 = amount.parse()?;
 
-    Ok(Point { x, y })
+    Ok(Motion {
+        dir: Point { x, y },
+        amount,
+    })
+}
+
+struct Motion {
+    dir: Point,
+    amount: u32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
@@ -54,23 +60,25 @@ impl Point {
 }
 
 /// Return the number of positions visited by "tail".
-fn simulate(motions: impl Iterator<Item = Point>) -> usize {
+fn simulate(motions: impl Iterator<Item = Motion>) -> usize {
     let mut seen = HashSet::new();
 
     let mut head = Point::ORIGIN;
     let mut tail = Point::ORIGIN;
     seen.insert(tail);
 
-    for Point { x, y } in motions {
-        head.x += x;
-        head.y += y;
+    for m in motions {
+        for _ in 0..m.amount {
+            head.x += m.dir.x;
+            head.y += m.dir.y;
 
-        while !is_close(head, tail) {
-            let dx = head.x - tail.x;
-            let dy = head.y - tail.y;
-            tail.x += dx.signum();
-            tail.y += dy.signum();
-            seen.insert(tail);
+            while !is_close(head, tail) {
+                let dx = head.x - tail.x;
+                let dy = head.y - tail.y;
+                tail.x += dx.signum();
+                tail.y += dy.signum();
+                seen.insert(tail);
+            }
         }
     }
 
