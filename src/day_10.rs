@@ -17,6 +17,18 @@ fn part_1() -> Result<()> {
     Ok(())
 }
 
+#[test]
+fn part_2() -> Result<()> {
+    let input = input!(10);
+
+    let instrs: Vec<_> = parse_input(input).collect::<Result<_>>()?;
+    let register_values = execute(&instrs);
+    let screen = draw_screen(&register_values);
+    print_screen(&screen);
+
+    Ok(())
+}
+
 #[derive(Debug, Clone, Copy)]
 enum Instr {
     AddX { delta: i32 },
@@ -83,4 +95,32 @@ fn signal_strength_sum(register_values: &[i32]) -> i32 {
     }
 
     sss
+}
+
+fn draw_screen(register_values: &[i32]) -> Vec<String> {
+    let h = 6;
+    let w = 40;
+    let n = h * w;
+    assert!(register_values.len() >= n);
+
+    let mut screen = Vec::with_capacity(h);
+    for y in 0..h {
+        let mut row = String::with_capacity(w);
+        for x in 0..w {
+            let i = y * w + x;
+            let sprite_center = register_values[i];
+            let pixel = if (x as i32 - sprite_center).abs() <= 1 {
+                '#'
+            } else {
+                '.'
+            };
+            row.push(pixel);
+        }
+        screen.push(row);
+    }
+    screen
+}
+
+fn print_screen(screen: &[String]) {
+    dbg!(screen); // :)
 }
