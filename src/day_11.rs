@@ -9,7 +9,7 @@ use crate::input;
 fn part_1() -> Result<()> {
     let _input = input!(11);
 
-    let answer = Monkeys::new_part1().play_game(20);
+    let answer = Monkeys::new(Part::Part1).play_game(20);
     dbg!(answer);
 
     Ok(())
@@ -17,7 +17,7 @@ fn part_1() -> Result<()> {
 
 #[test]
 fn part_2() -> Result<()> {
-    let answer = Monkeys::new_part2().play_game(10_000);
+    let answer = Monkeys::new(Part::Part2).play_game(10_000);
     dbg!(answer);
 
     Ok(())
@@ -25,7 +25,7 @@ fn part_2() -> Result<()> {
 
 /// Yes, I really just typed this out by hand.
 fn hardcoded_monkeys() -> [Monkey; 8] {
-    let args: [(_, fn(u32) -> u32, _, _, _); 8] = [
+    let args: [(_, fn(u64) -> u64, _, _, _); 8] = [
         (vec![57], |x| x * 13, 11, 3, 2),
         (vec![58, 93, 88, 81, 72, 73, 65], |x| x + 2, 7, 6, 7),
         (vec![65, 95], |x| x + 6, 13, 3, 5),
@@ -41,21 +41,23 @@ fn hardcoded_monkeys() -> [Monkey; 8] {
 
 struct Monkeys {
     monkeys: [Monkey; 8],
-    divide_by_three: bool,
+    part: Part,
+    /// Used in part 2.
+    divisor_product: u64,
+}
+
+enum Part {
+    Part1,
+    Part2,
 }
 
 impl Monkeys {
-    fn new_part1() -> Self {
+    fn new(part: Part) -> Self {
+        let monkeys = hardcoded_monkeys();
         Self {
-            monkeys: hardcoded_monkeys(),
-            divide_by_three: true,
-        }
-    }
-
-    fn new_part2() -> Self {
-        Self {
-            monkeys: hardcoded_monkeys(),
-            divide_by_three: false,
+            divisor_product: monkeys.iter().map(|m| m.test_divisible_by).product(),
+            monkeys,
+            part,
         }
     }
 
@@ -81,8 +83,9 @@ impl Monkeys {
             m.num_items_inspected += 1;
 
             let mut new_item = (m.operation)(item);
-            if self.divide_by_three {
-                new_item /= 3;
+            match self.part {
+                Part::Part1 => new_item /= 3,
+                Part::Part2 => new_item %= self.divisor_product,
             }
 
             let target = if new_item % m.test_divisible_by == 0 {
@@ -106,10 +109,10 @@ impl Monkeys {
 }
 
 struct Monkey {
-    items: Vec<u32>,
+    items: Vec<u64>,
     /// Remember to divide by 3 after.
-    operation: fn(u32) -> u32,
-    test_divisible_by: u32,
+    operation: fn(u64) -> u64,
+    test_divisible_by: u64,
     true_target: usize,
     false_target: usize,
 
@@ -118,9 +121,9 @@ struct Monkey {
 
 impl Monkey {
     const fn new(
-        items: Vec<u32>,
-        operation: fn(u32) -> u32,
-        test_divisible_by: u32,
+        items: Vec<u64>,
+        operation: fn(u64) -> u64,
+        test_divisible_by: u64,
         true_target: usize,
         false_target: usize,
     ) -> Self {
