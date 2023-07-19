@@ -1,4 +1,4 @@
-use std::{mem, cmp::Reverse};
+use std::{cmp::Reverse, mem};
 
 use anyhow::Result;
 use itertools::Itertools;
