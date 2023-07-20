@@ -15,14 +15,27 @@ fn part_1() -> Result<()> {
     Ok(())
 }
 
+#[test]
+fn part_2() -> Result<()> {
+    let input = input!(12);
+
+    let (grid, _start, end) = Grid::parse(input)?;
+    let dist = grid.shortest_path_2(end).context("no path exists")?;
+    dbg!(dist);
+
+    Ok(())
+}
+
 /// A non-empty, rectangular grid.
 #[derive(Debug)]
 struct Grid {
     grid: Vec<Vec<u8>>,
 }
 
+type Point = (usize, usize);
+
 impl Grid {
-    fn parse(s: &str) -> Result<(Self, (usize, usize), (usize, usize))> {
+    fn parse(s: &str) -> Result<(Self, Point, Point)> {
         let mut grid: Vec<_> = s.lines().map(|l| l.to_owned().into_bytes()).collect();
 
         ensure!(!grid.is_empty(), "no rows");
@@ -59,14 +72,14 @@ impl Grid {
         ))
     }
 
-    fn dims(&self) -> (usize, usize) {
+    fn dims(&self) -> Point {
         let h = self.grid.len();
         let w = self.grid[0].len();
         (h, w)
     }
 
     /// Return None if no path exists.
-    fn shortest_path(&self, start: (usize, usize), end: (usize, usize)) -> Option<usize> {
+    fn shortest_path(&self, start: Point, end: Point) -> Option<usize> {
         let mut q = VecDeque::new();
         let mut seen = HashSet::new();
 
@@ -80,10 +93,7 @@ impl Grid {
             }
 
             for nbr in self.nbrs(curr) {
-                let (i, j) = curr;
-                let (i2, j2) = nbr;
-                let has_edge = self.grid[i2][j2] <= self.grid[i][j] + 1;
-                if has_edge && !seen.contains(&nbr) {
+                if self.has_edge(curr, nbr) && !seen.contains(&nbr) {
                     seen.insert(nbr);
                     q.push_back((nbr, dist + 1));
                 }
@@ -93,7 +103,39 @@ impl Grid {
         None
     }
 
-    fn nbrs(&self, (i, j): (usize, usize)) -> impl Iterator<Item = (usize, usize)> {
+    /// Find the shortest path starting from any 'a', and ending at `end`.
+    fn shortest_path_2(&self, end: Point) -> Option<usize> {
+        let mut q = VecDeque::new();
+        let mut seen = HashSet::new();
+
+        // Start at the `end` node, and travel backwards along edges.
+        seen.insert(end);
+        q.push_back((end, 0));
+
+        while let Some((curr, dist)) = q.pop_front() {
+            if self.grid[curr.0][curr.1] == b'a' {
+                return Some(dist);
+            }
+
+            for nbr in self.nbrs(curr) {
+                // Note the swapped order of arguments!
+                if self.has_edge(nbr, curr) && !seen.contains(&nbr) {
+                    seen.insert(nbr);
+                    q.push_back((nbr, dist + 1));
+                }
+            }
+        }
+
+        None
+    }
+
+    fn has_edge(&self, (i, j): Point, (i2, j2): Point) -> bool {
+        // Ascend by at most 1.
+        self.grid[i2][j2] <= self.grid[i][j] + 1
+    }
+
+    /// Neighboring coords; up to 4 of them.
+    fn nbrs(&self, (i, j): Point) -> impl Iterator<Item = Point> {
         let (h, w) = self.dims();
 
         [(-1, 0), (1, 0), (0, -1), (0, 1)]
