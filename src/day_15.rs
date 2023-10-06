@@ -13,12 +13,21 @@ fn part_1() {
     dbg!(ans);
 }
 
-#[derive(Debug, Clone, Copy)]
+#[test]
+fn part_2() {
+    let input = input!("15");
+    let sensors = parse_input(input);
+    let ans = find_the_one(&sensors);
+    dbg!(ans);
+}
+
+#[derive(Clone, Copy, Debug)]
 struct Point {
     x: i32,
     y: i32,
 }
 
+#[derive(Debug, Copy, Clone)]
 struct Sensor {
     sensor: Point,
     nearest_beacon: Point,
@@ -68,6 +77,120 @@ fn num_non_beacons(sensors: &[Sensor]) -> usize {
     }
 
     shadow.len() - beacons.len()
+}
+
+fn find_the_one(sensors: &[Sensor]) -> Point {
+    // let mut points = vec![];
+    for sensor in sensors {
+        let bounding_box = bounding_box(sensor);
+        for point in bounding_box {
+            if !intersects_boxes(point, sensors) { return point; }
+        }
+    }
+
+    // for point in points {
+    //     dbg!(point);
+    // }
+
+    panic!("AHHHHHHH!!");
+}
+
+// #[test]
+// fn check() {
+//     let input = input!("15-small");
+//     let sensors = parse_input(input);
+//     assert!(!intersects_boxes(Point{x: 14, y: 11}, &sensors));
+// }
+
+// #[test]
+// fn check_bb() {
+//     let input = input!("15-small");
+//     let sensors = parse_input(input);
+//     let bb = bounding_box(&Sensor {sensor: Point {x: 8, y: 7},
+//                                    nearest_beacon: Point {x: 2, y: 10}});
+//     dbg!(bb);
+// }
+
+fn intersects_boxes(point: Point, sensors: &[Sensor]) -> bool {
+    for sensor in sensors {
+        let beacon_rad = dist(sensor.sensor, sensor.nearest_beacon);
+        let point_rad = dist(point, sensor.sensor);
+
+        if point_rad <= beacon_rad {
+            // dbg!(":)");
+            return true;
+        }
+    }
+
+    // for sensor in sensors {
+    //     let beacon_rad = dist(sensor.sensor, sensor.nearest_beacon);
+    //     let point_rad = dist(point, sensor.nearest_beacon);
+    //     dbg!("FOUND NON-INTERSECTING POINT");
+    //     dbg!(point);
+    //     dbg!(sensor.nearest_beacon);
+    //     dbg!(sensor.sensor);
+    //     dbg!(point_rad);
+    //     dbg!(beacon_rad);
+    // }
+
+    return false;
+}
+
+fn bounding_box(sensor: &Sensor) -> Vec<Point> {
+    const K_UB: i32 = 4000000;
+    let dist = (dist(sensor.sensor, sensor.nearest_beacon) + 1) as i32;
+    let mut bx = vec![];
+    let x = sensor.sensor.x;
+    let y = sensor.sensor.y;
+    for diff in 0..dist {
+        // line segment /
+        let x_bound = x - (dist + diff);
+        let y_bound = y + diff;
+        if x_bound < 0 || x_bound > K_UB || y_bound < 0 || y_bound > K_UB {
+            continue;
+        }
+
+        bx.push(Point {x: x_bound, y: y_bound});
+    }
+
+    for diff in 0..dist {
+        // line segment \
+        let x_bound = x + (dist - diff);
+        let y_bound = y + diff;
+        if x_bound < 0 || x_bound > K_UB || y_bound < 0 || y_bound > K_UB {
+            continue;
+        }
+
+        bx.push(Point {x: x_bound, y: y_bound});
+    }
+
+    for diff in 0..dist {
+        // line segment \ (but underneath)
+        let x_bound = x - (dist + diff);
+        let y_bound = y - diff;
+        if x_bound < 0 || x_bound > K_UB || y_bound < 0 || y_bound > K_UB {
+            continue;
+        }
+
+        bx.push(Point {x: x_bound, y: y_bound});
+    }
+
+    for diff in 0..dist {
+        // line segment / (but underneath)
+        let x_bound = x + (dist - diff);
+        let y_bound = y - diff;
+        if x_bound < 0 || x_bound > K_UB || y_bound < 0 || y_bound > K_UB {
+            continue;
+        }
+
+        bx.push(Point {x: x_bound, y: y_bound});
+    }
+
+    // for point in &bx {
+    //     assert!(intersects_boxes(*point, &[*sensor]));
+    // }
+
+    bx
 }
 
 fn dist(p1: Point, p2: Point) -> u32 {
