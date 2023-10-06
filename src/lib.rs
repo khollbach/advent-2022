@@ -20,7 +20,7 @@ macro_rules! input {
         include_str!(concat!(
             env!("CARGO_MANIFEST_DIR"),
             "/inputs/",
-            stringify!($n)
+            $n
         ))
     };
 }
