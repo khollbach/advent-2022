@@ -13,15 +13,12 @@ mod day_11;
 mod day_12;
 mod day_13;
 mod day_14;
+mod day_15;
 
 /// Get the input for a given day, as a &str.
 macro_rules! input {
     ($n:expr) => {
-        include_str!(concat!(
-            env!("CARGO_MANIFEST_DIR"),
-            "/inputs/",
-            $n
-        ))
+        include_str!(concat!(env!("CARGO_MANIFEST_DIR"), "/inputs/", $n))
     };
 }
 use input;
