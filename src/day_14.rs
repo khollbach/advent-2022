@@ -11,8 +11,25 @@ use crate::input;
 fn part_1() {
     let input = input!(14);
     let paths = parse_input(input);
+
     let mut grid = Grid::new(&paths);
-    let ans = grid.simulate(Point { x: 500, y: 0 });
+    let sim = grid.simulate(Point { x: 500, y: 0 });
+    assert!(matches!(sim, Simulate::OutOfBounds));
+
+    let ans = grid.count_sand();
+    dbg!(ans);
+}
+
+#[test]
+fn part_2() {
+    let input = input!(14);
+    let paths = parse_input(input);
+
+    let mut grid = Grid::with_floor(&paths);
+    let sim = grid.simulate(Point { x: 500, y: 0 });
+    assert!(matches!(sim, Simulate::SourceBlocked));
+
+    let ans = grid.count_sand();
     dbg!(ans);
 }
 
@@ -99,10 +116,18 @@ impl Grid {
         let y_max = points.clone().map(|p| p.y).max().unwrap();
         let h = y_max as usize + 1;
         let w = x_max as usize + 1;
-        let cells = vec![vec![Cell::Air; w]; h];
+        let cells = vec![vec![Cell::Air; w * 2]; h]; // NOTE the 'times-2'
 
         let mut this = Self { cells };
         this.draw_paths(paths);
+        this
+    }
+
+    fn with_floor(paths: &[Vec<Point>]) -> Self {
+        let mut this = Self::new(paths);
+        let w = this.dims().x as usize;
+        this.cells.push(vec![Cell::Air; w]);
+        this.cells.push(vec![Cell::Rock; w]);
         this
     }
 
@@ -152,27 +177,30 @@ impl Grid {
         &mut self.cells[p.y as usize][p.x as usize]
     }
 
-    fn simulate(&mut self, sand_source: Point) -> usize {
+    fn simulate(&mut self, sand_source: Point) -> Simulate {
         assert!(self.in_bounds(sand_source));
-        while self.drop_sand(sand_source) {}
-        self.count_sand()
+        loop {
+            match self.drop_sand(sand_source) {
+                DropSand::SourceBlocked => return Simulate::SourceBlocked,
+                DropSand::OutOfBounds => return Simulate::OutOfBounds,
+                DropSand::Stuck => continue,
+            }
+        }
     }
 
     /// Generate one unit of sand, and then let it fall.
-    ///
-    /// Return true if the sand got "stuck" somewhere.
-    /// Return false if it fell out-of-bounds.
-    /// Panic if the source itself is blocked.
-    fn drop_sand(&mut self, sand_source: Point) -> bool {
-        assert_eq!(self.get(sand_source), Cell::Air);
+    fn drop_sand(&mut self, sand_source: Point) -> DropSand {
+        if self.get(sand_source) != Cell::Air {
+            return DropSand::SourceBlocked;
+        }
 
         let mut curr = sand_source;
         *self.get_mut(curr) = Cell::Sand;
 
         loop {
             match self.step_sand(curr) {
-                StepSand::Stuck => return true,
-                StepSand::OutOfBounds => return false,
+                StepSand::Stuck => return DropSand::Stuck,
+                StepSand::OutOfBounds => return DropSand::OutOfBounds,
                 StepSand::MovedTo(next) => curr = next,
             }
         }
@@ -203,6 +231,17 @@ impl Grid {
             .flat_map(|row| row.iter().filter(|&&cell| cell == Cell::Sand));
         sand.count()
     }
+}
+
+enum Simulate {
+    SourceBlocked,
+    OutOfBounds,
+}
+
+enum DropSand {
+    SourceBlocked,
+    Stuck,
+    OutOfBounds,
 }
 
 enum StepSand {
