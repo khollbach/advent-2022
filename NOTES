@@ -1,0 +1,4 @@
+day 16
+- turns out most values are 0; there's only 15 non-zero nodes
+- idea: maybe the graph is actually a tree? can't hurt to check
+

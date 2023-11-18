@@ -14,6 +14,7 @@ mod day_12;
 mod day_13;
 mod day_14;
 mod day_15;
+mod day_16;
 
 /// Get the input for a given day, as a &str.
 macro_rules! input {

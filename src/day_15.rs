@@ -51,8 +51,11 @@ fn parse_line(line: &str) -> Sensor {
     let x = caps[3].parse().unwrap();
     let y = caps[4].parse().unwrap();
     let nearest_beacon = Point { x, y };
-    
-    Sensor { sensor, nearest_beacon }
+
+    Sensor {
+        sensor,
+        nearest_beacon,
+    }
 }
 
 fn num_non_beacons(sensors: &[Sensor]) -> usize {
@@ -84,7 +87,9 @@ fn find_the_one(sensors: &[Sensor]) -> Point {
     for sensor in sensors {
         let bounding_box = bounding_box(sensor);
         for point in bounding_box {
-            if !intersects_boxes(point, sensors) { return point; }
+            if !intersects_boxes(point, sensors) {
+                return point;
+            }
         }
     }
 
@@ -150,7 +155,10 @@ fn bounding_box(sensor: &Sensor) -> Vec<Point> {
             continue;
         }
 
-        bx.push(Point {x: x_bound, y: y_bound});
+        bx.push(Point {
+            x: x_bound,
+            y: y_bound,
+        });
     }
 
     for diff in 0..dist {
@@ -161,7 +169,10 @@ fn bounding_box(sensor: &Sensor) -> Vec<Point> {
             continue;
         }
 
-        bx.push(Point {x: x_bound, y: y_bound});
+        bx.push(Point {
+            x: x_bound,
+            y: y_bound,
+        });
     }
 
     for diff in 0..dist {
@@ -172,7 +183,10 @@ fn bounding_box(sensor: &Sensor) -> Vec<Point> {
             continue;
         }
 
-        bx.push(Point {x: x_bound, y: y_bound});
+        bx.push(Point {
+            x: x_bound,
+            y: y_bound,
+        });
     }
 
     for diff in 0..dist {
@@ -183,7 +197,10 @@ fn bounding_box(sensor: &Sensor) -> Vec<Point> {
             continue;
         }
 
-        bx.push(Point {x: x_bound, y: y_bound});
+        bx.push(Point {
+            x: x_bound,
+            y: y_bound,
+        });
     }
 
     // for point in &bx {
